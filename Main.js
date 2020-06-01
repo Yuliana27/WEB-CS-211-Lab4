@@ -1,0 +1,82 @@
+import React, { Component } from 'react';
+import { Navbar, NavbarBrand } from 'reactstrap';
+import Header from './Header';
+import Footer from './Footer';
+import Menu from './Menu';
+import Comments from './Comments';
+import SecondBlock_Menu from './SecondBlock_Menu';
+import ThirdBlock from './ThirdBlock';
+import FourthBlock from './FourthBlock';
+import login from './login';
+import signup from './signup';
+
+import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
+import { connect } from 'react-redux';
+import { addComment, fetchDishes } from '../redux/ActionCreators';
+
+
+const mapStateToProps = state => {
+  return {
+    dishes: state.dishes,
+    comments: state.comments,
+  }
+}
+const mapDispatchToProps = dispatch => ({
+
+  addComment: (dishId, rating, author, comment) => dispatch(addComment(dishId, rating, author, comment)),
+  fetchDishes: () => {dispatch(fetchDishes())}
+});
+
+class Main extends Component {
+
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount(){
+    this.props.fetchDishes();
+  }
+
+  render() {
+
+    const HomePage = () => {
+      return(
+      <SecondBlock_Menu/>
+       <ThirdBlock/>
+       <FourthBlock/>
+       <FifthBlock/>
+      );
+    }
+
+    const Comments = ({match}) => {
+      return(
+          <Comments dish={this.props.dishes.dishes.filter((dish) => dish.id === parseInt(match.params.dishId,10))[0]}
+            errMess={this.props.dishes.errMess}
+            comments={this.props.comments.filter((comment) => comment.dishId === parseInt(match.params.dishId,10))}
+            addComment={this.props.addComment}
+          />
+      );
+    }
+
+    return (
+      <div>
+        <Header />
+        <div>
+          <Switch>
+              <Route path='/index' component={HomePage} />
+              <Route exact path='#menu' component={SecondBlock_Menu}  />
+              <Route exact path='#orders' component={ThirdBlock}  />
+              <Route exact path='#photos' component={FouthBlock}  />
+              <Route exact path='/login' component={login}  />
+              <Route exact path='/signup' component={signup}  />
+              <Route path='/comments/:dishId' component={Comments} />
+              <Redirect to="/index" />
+          </Switch>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Main));
